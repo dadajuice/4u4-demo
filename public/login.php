@@ -1,3 +1,27 @@
+<?php
+
+require_once "../app/Models/Database.php";
+
+$database = new Database();
+
+if (isset($_POST['submit'])) {
+
+    $username = $_POST["username"] ?? "";
+    $password = $_POST["password"] ?? "";
+
+    $sql = "SELECT * 
+              FROM authentication 
+             WHERE username = '$username' 
+               AND password = '$password'";
+    $user = $database->selectOne($sql);
+    if (is_null($user)) {
+        die("Authentifiants invalides.");
+    }
+    var_dump($user);
+    exit;
+}
+
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -13,13 +37,13 @@
         <main>
             <form action="login.php" method="post">
                 <label for="username" class="form-label">Nom d'utilisateur</label>
-                <input type="text" class="form-control" id="username" />
+                <input type="text" name="username" class="form-control" id="username" />
 
                 <label for="password" class="form-label">Mot de passe</label>
-                <input type="password" class="form-control" id="password" />
+                <input type="password" name="password" class="form-control" id="password" />
 
                 <div class="mt-3 text-end">
-                    <button class="btn btn-success" type="submit">Connecter</button>
+                    <button name="submit" class="btn btn-success" type="submit">Connecter</button>
                 </div>
             </form>
         </main>
