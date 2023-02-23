@@ -2,6 +2,8 @@
 
 require_once "../app/Models/Database.php";
 
+session_start();
+
 $database = new Database();
 
 if (isset($_POST['submit'])) {
@@ -15,10 +17,13 @@ if (isset($_POST['submit'])) {
                AND password = '$password'";
     $user = $database->selectOne($sql);
     if (is_null($user)) {
-        die("Authentifiants invalides.");
+        $error = "Authentifiants invalides.";
+        $_SESSION['error'] = $error;
+        header("Location: login.php");
+        exit;
     }
-    var_dump($user);
-    exit;
+
+
 }
 
 ?>
@@ -35,6 +40,13 @@ if (isset($_POST['submit'])) {
     <h1 class="intro-title">Authentification</h1>
     <div class="d-flex justify-content-center">
         <main>
+            <?php
+            if (!empty($_SESSION['error'] ?? "")) {
+                ?>
+                <div class="alert alert-danger"><?= $_SESSION['error'] ?></div>
+                <?php
+            }
+            ?>
             <form action="login.php" method="post">
                 <label for="username" class="form-label">Nom d'utilisateur</label>
                 <input type="text" name="username" class="form-control" id="username" />
@@ -53,3 +65,7 @@ if (isset($_POST['submit'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 </body>
 </html>
+<?php
+    unset($_SESSION['error']);
+?>
+
