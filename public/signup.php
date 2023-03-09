@@ -1,11 +1,10 @@
 <?php
 
-require_once "../app/Models/Database.php";
+require_once "../app/Models/Brokers/UserBroker.php";
+require_once "../app/Models/Flash.php";
 require_once "../app/Models/Validation.php";
 
 session_start();
-
-$database = new Database();
 
 if (isset($_POST['submit'])) {
     $email = $_POST['email'] ?? "";
@@ -26,17 +25,20 @@ if (isset($_POST['submit'])) {
     }
 
     if (!empty($errors)) {
-        $_SESSION['error'] = $errors;
+        Flash::error($errors);
         header("Location: signup.php");
         exit;
     }
 
-    $password = hash('sha256', $password);
-    $database = new Database();
-    $sql = "INSERT INTO authentication(username, password, firstname, lastname, email) 
-            VALUES ('$username', '$password', '$firstname', '$lastname', '$email')";
-    $database->query($sql);
-    $_SESSION['success'] = "Compte créé avec succès 🎉!";
+    $broker = new UserBroker();
+    $broker->insert((object) [
+        'username' => $username,
+        'password' => $password,
+        'firstname' => $firstname,
+        'lastname' => $lastname,
+        'email' => $email
+    ]);
+    Flash::success("Compte créé avec succès 🎉!");
     header("Location: login.php");
     exit;
 }
@@ -55,30 +57,7 @@ if (isset($_POST['submit'])) {
     <h1 class="intro-title">Signup</h1>
     <div class="d-flex justify-content-center">
         <main>
-            <?php
-            if (!empty($_SESSION['error'] ?? "")) {
-                ?>
-                <div class="alert alert-danger">
-                    <?php
-                    if (is_array($_SESSION['error'])) {
-                        ?>
-                        <ul class="mb-0">
-                            <?php
-                            foreach ($_SESSION['error'] as $error) {
-                                echo "<li>$error</li>";
-                            }
-                            ?>
-                        </ul>
-                        <?php
-                    } else {
-                        echo $_SESSION['error'];
-                    }
-                    ?>
-                </div>
-                <?php
-                unset($_SESSION['error']);
-            }
-            ?>
+            <?php Flash::displayAll(); ?>
             <form action="signup.php" method="post">
                 <div class="mb-3">
                     <label class="form-label">Email address</label>

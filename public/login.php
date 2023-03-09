@@ -1,31 +1,20 @@
 <?php
 
-require_once "../app/Models/Database.php";
-
+require_once "../app/Models/Brokers/UserBroker.php";
+require_once "../app/Models/Flash.php";
 session_start();
-
-$database = new Database();
-$hash = hash("sha256", "toto!");
-echo $hash;
 
 if (isset($_POST['submit'])) {
 
     $username = $_POST["username"] ?? "";
-    $password = hash("sha256", $_POST["password"] ?? "");
-
-    $sql = "SELECT * 
-              FROM authentication 
-             WHERE username = '$username' 
-               AND password = '$password'";
-    $user = $database->selectOne($sql);
+    $password = $_POST["password"] ?? "";
+    $broker = new UserBroker();
+    $user = $broker->findByCredentials($username, $password);
     if (is_null($user)) {
-        $error = "Authentifiants invalides.";
-        $_SESSION['error'] = $error;
+        Flash::error("Authentifiants invalides.");
         header("Location: login.php");
         exit;
     }
-
-
 }
 
 ?>
@@ -42,18 +31,7 @@ if (isset($_POST['submit'])) {
     <h1 class="intro-title">Authentification</h1>
     <div class="d-flex justify-content-center">
         <main>
-            <?php
-            if (!empty($_SESSION['error'] ?? "")) {
-                ?>
-                <div class="alert alert-danger"><?= $_SESSION['error'] ?></div>
-                <?php
-            }
-            if (!empty($_SESSION['success'] ?? "")) {
-                ?>
-                <div class="alert alert-success"><?= $_SESSION['success'] ?></div>
-                <?php
-            }
-            ?>
+            <?php Flash::displayAll(); ?>
             <form action="login.php" method="post">
                 <label for="username" class="form-label">Nom d'utilisateur</label>
                 <input type="text" name="username" class="form-control" id="username" />
