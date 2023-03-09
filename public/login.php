@@ -5,11 +5,13 @@ require_once "../app/Models/Database.php";
 session_start();
 
 $database = new Database();
+$hash = hash("sha256", "toto!");
+echo $hash;
 
 if (isset($_POST['submit'])) {
 
     $username = $_POST["username"] ?? "";
-    $password = $_POST["password"] ?? "";
+    $password = hash("sha256", $_POST["password"] ?? "");
 
     $sql = "SELECT * 
               FROM authentication 
@@ -46,6 +48,11 @@ if (isset($_POST['submit'])) {
                 <div class="alert alert-danger"><?= $_SESSION['error'] ?></div>
                 <?php
             }
+            if (!empty($_SESSION['success'] ?? "")) {
+                ?>
+                <div class="alert alert-success"><?= $_SESSION['success'] ?></div>
+                <?php
+            }
             ?>
             <form action="login.php" method="post">
                 <label for="username" class="form-label">Nom d'utilisateur</label>
@@ -67,5 +74,6 @@ if (isset($_POST['submit'])) {
 </html>
 <?php
     unset($_SESSION['error']);
+    unset($_SESSION['success']);
 ?>
 
